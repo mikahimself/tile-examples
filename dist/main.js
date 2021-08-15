@@ -1,1 +1,0 @@
-(()=>{"use strict";var n,t=0;function e(){if(null!==n){var e=Math.floor(Date.now()/1e3);e!=t?t=e:0}}window.onload=function(){n=document.getElementById("gameCanvas").getContext("2d"),requestAnimationFrame(e),n="bold 10pt sans-serif"}})();
