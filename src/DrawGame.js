@@ -13,10 +13,15 @@ class DrawGame {
             for (let x = 0; x < this.mapW; x++) {
                 switch(mapData[((y * this.mapW) + x)]){
                     case 0:
-                        this.ctx.fillStyle = "#eeeeee";
+                        if ((x + y) % 2 != 0 ) {
+                            this.ctx.fillStyle = "rgb(238, 238, 238)";
+                        } else {
+                            this.ctx.fillStyle = "rgb(230, 230, 230)";
+                        }
+                        
                         break;
                     case 1:
-                        this.ctx.fillStyle = "#777777";
+                        this.ctx.fillStyle = "#888888";
                         break;
                     case 2:
                         this.ctx.fillStyle = "#999999";
