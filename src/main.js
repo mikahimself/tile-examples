@@ -1,22 +1,28 @@
 import { MapData } from './mapdata.js';
+import Vector2D from './Vector2D';
 import DrawGame from './DrawGame.js';
 import Character from './Character.js';
+import MapGrid from './MapGrid.js';
 
 var ctx;
 var drawGame;
 var currentSecond = 0;
 var framesLastSecond = 0;
 var frameCount = 0;
+var mapSize = new Vector2D(15, 15);
+var tileSize = new Vector2D(32, 32)
 
 var lastFrameTime = 0;
 
 var player;
+var map;
 
 window.onload = function() {
     ctx = document.getElementById('gameCanvas').getContext('2d');
-    player = new Character();
+    map = new MapGrid(MapData, mapSize, tileSize)
+    player = new Character(map);
     requestAnimationFrame(loop);
-    drawGame = new DrawGame(ctx, 15, 15, 32, 32, MapData);
+    drawGame = new DrawGame(ctx, mapSize, tileSize, MapData);
     ctx.font = 'bold 12pt sans-serif'
 }
 
@@ -26,7 +32,8 @@ function update() {
 }
 
 function draw() {
-    drawGame.drawAll(MapData, framesLastSecond)
+    map.draw(ctx);
+    drawGame.drawFramerate(framesLastSecond)
     player.draw(ctx);
 }
 
