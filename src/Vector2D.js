@@ -9,8 +9,7 @@ export default class Vector2D {
     }
 
     add(vector) {
-        this.x += vector.x;
-        this.y += vector.y;
+        return new this.constructor(this.x + vector.x, this.y + vector.y);
     }
 
     multiplyBy(multiplier) {

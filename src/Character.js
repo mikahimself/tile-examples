@@ -27,9 +27,9 @@ class Character {
     }
 
     placeAt(x, y) {
-        this.position.x = x * this.map.tileSize.x + this.map.tileSizeHalf.x;
-        this.position.y = y * this.map.tileSize.y + this.map.tileSizeHalf.x;
-        console.log(this.position)
+        this.position.x = x * this.map.tileSize.x + this.offset// + this.map.tileSizeHalf.x;
+        this.position.y = y * this.map.tileSize.y + this.offset// + this.map.tileSizeHalf.x;
+        // console.log("place to pos: ", this.position)
     };
 
     processMovement(t) {
@@ -51,9 +51,13 @@ class Character {
         // this.previousDirection = this.direction;
 
         this.normalizeDirection();
+        
         this.velocity = this.direction.multiplyBy(this.speed);
-        if (this.map.isCellVacant(this.position, this.previousDirection)) {
-            this.position.add(this.velocity);
+        if (this.velocity.x != 0 || this.velocity.y != 0) {
+            if (this.map.isCellVacant(this.position, this.direction)) {
+                //this.position.add(this.velocity);
+                this.map.updateChildPosition(this);
+            }
         }
     }
 
@@ -76,8 +80,8 @@ class Character {
 
     draw(ctx) {
         ctx.fillStyle = "#333333"
-        ctx.fillRect(this.position.x - this.map.tileSizeHalf.x + this.offset, 
-                     this.position.y - this.map.tileSizeHalf.y + this.offset,
+        ctx.fillRect(this.position.x, // - this.map.tileSizeHalf.x + this.offset, 
+                     this.position.y, // - this.map.tileSizeHalf.y + this.offset,
                      this.dimensions.x,
                      this.dimensions.y);
     }

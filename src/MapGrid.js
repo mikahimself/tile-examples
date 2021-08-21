@@ -1,3 +1,5 @@
+import Vector2D from "./Vector2D";
+
 export default class MapGrid {
     constructor(mapData, mapSize, tileSize) {
         this.mapData = mapData;
@@ -7,21 +9,38 @@ export default class MapGrid {
     }
 
     isCellVacant(pos, direction) {
-        console.log(direction.x * this.tileSize.x);
-        let gridX = Math.floor((pos.x + (direction.x * 16 + 2)) / this.tileSize.x);
-        let gridY = Math.floor((pos.y + (direction.y * 16 + 2)) / this.tileSize.y);
-        console.log(`Player located at ${gridX}, ${gridY}`)
+        // console.log(pos);
+        let gridX;
+        let gridY;
+        // let gridX = Math.floor((pos.x + (direction.x * 16 + 2)) / this.tileSize.x);
+        if (direction.x > 0) {
+            gridX = Math.floor((pos.x + direction.x + 24 + 3) / this.tileSize.x);
+        } else {
+            gridX = Math.floor((pos.x + direction.x - 4) / this.tileSize.x);
+        }
+        if (direction.y > 0) {
+            gridY = Math.floor((pos.y + (direction.y + 24 + 3)) / this.tileSize.y);    
+        } else {
+            gridY = Math.floor((pos.y + (direction.y - 4)) / this.tileSize.y);
+        }
+
+
+        // console.log(`Target located at ${gridX}, ${gridY}`)
         let mapPos = gridX + (gridY * this.mapSize.x);
         let mapItem = this.mapData[mapPos];
-        if (mapItem == 0) {
-            return true;
-        }
-        return false;
+        return mapItem == 0 ? true : false;
+        
 
     }
 
-    updateChildPosition() {
+    getGridPosition
 
+    updateChildPosition(child) {
+        var gridPos = new Vector2D(Math.floor(child.position.x / this.tileSize.x), Math.floor(child.position.y / this.tileSize.y))
+        // console.log("Grid position: ", gridPos, " direction ", child.direction)
+        var newPos = gridPos.add(child.direction)
+        // console.log("new grid pos", newPos)
+        child.placeAt(newPos.x, newPos.y)
     }
 
     draw(ctx) {
