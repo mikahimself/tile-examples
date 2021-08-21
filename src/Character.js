@@ -12,6 +12,7 @@ class Character {
         this.position = new Vector2D();
         this.targetDirection = new Vector2D();
         this.targetPosition = new Vector2D();
+        this.finalTargetPosition = new Vector2D();
         this.dimensions = new Vector2D(size, size);
         this.offset = (map.tileSize.x - this.dimensions.x) / 2
         this.isMoving = false;
@@ -51,13 +52,7 @@ class Character {
         }
 
         if (this.myRoute.length > 0 && !this.isMoving) {
-            let len = this.myRoute.length - 1;
-            let target = new Vector2D(this.myRoute[len].x, this.myRoute[len].y);
-
-            this.targetPosition = new Vector2D((target.x * 32) + this.offset, (target.y * 32) + this.offset);
-            this.isMoving = true;
-            let mapPos = this.map.worldToMap(this.position);
-            this.targetDirection = target.subtract(mapPos);
+            this.setAstarMovementTarget();
         }
 
         if (!this.isMoving && !this.direction.equals(new Vector2D)) {
@@ -67,26 +62,40 @@ class Character {
                 this.isMoving = true;
             }
         } else if (this.isMoving) {
-            this.velocity = this.targetDirection.multiplyBy(this.speed);
-            var distanceToTarget = new Vector2D(
-                                    Math.abs(this.targetPosition.x - this.position.x),
-                                    Math.abs(this.targetPosition.y - this.position.y));
-            if (Math.abs(this.velocity.x) > distanceToTarget.x) {
-                this.velocity.x = distanceToTarget.x * this.targetDirection.x;
-                this.isMoving = false;
-                if (this.myRoute.length > 0) {
-                    this.myRoute.pop();
-                }
-            }
-            if (Math.abs(this.velocity.y) > distanceToTarget.y) {
-                this.velocity.y = distanceToTarget.y * this.targetDirection.y;
-                this.isMoving = false;
-                if (this.myRoute.length > 0) {
-                    this.myRoute.pop();
-                }
-            }
+            this.handleMovementSetup();
             this.move(this.velocity);
         }
+    }
+
+    handleMovementSetup() {
+        this.velocity = this.targetDirection.multiplyBy(this.speed);
+        var distanceToTarget = new Vector2D(
+                                Math.abs(this.targetPosition.x - this.position.x),
+                                Math.abs(this.targetPosition.y - this.position.y));
+        if (Math.abs(this.velocity.x) > distanceToTarget.x) {
+            this.velocity.x = distanceToTarget.x * this.targetDirection.x;
+            this.isMoving = false;
+            if (this.myRoute.length > 0) {
+                this.myRoute.pop();
+            }
+        }
+        if (Math.abs(this.velocity.y) > distanceToTarget.y) {
+            this.velocity.y = distanceToTarget.y * this.targetDirection.y;
+            this.isMoving = false;
+            if (this.myRoute.length > 0) {
+                this.myRoute.pop();
+            }
+        }
+    } 
+
+    setAstarMovementTarget() {
+        let len = this.myRoute.length - 1;
+        let target = new Vector2D(this.myRoute[len].x, this.myRoute[len].y);
+
+        this.targetPosition = new Vector2D((target.x * 32) + this.offset, (target.y * 32) + this.offset);
+        this.isMoving = true;
+        let mapPos = this.map.worldToMap(this.position);
+        this.targetDirection = target.subtract(mapPos);
     }
 
     setRoute(event) {
@@ -102,7 +111,7 @@ class Character {
 
         if (route) {
             this.myRoute = route;
-
+            this.finalTargetPosition = this.map.mapToWorld(new Vector2D(this.myRoute[0].x, this.myRoute[0].y))
             let lastVec = new Vector2D(this.myRoute[this.myRoute.length - 1].x, this.myRoute[this.myRoute.length - 1].y);
             if (lastVec.equals(current)) {
                 this.myRoute.pop();
@@ -123,17 +132,14 @@ class Character {
     }
 
     draw(ctx) {
-        
-
         if (this.myRoute.length > 0) {
             ctx.fillStyle = "#222222"
-            let end = this.map.mapToWorld(new Vector2D(this.myRoute[0].x, this.myRoute[0].y))
-            ctx.fillRect(end.x + 8,
-                         end.y + 8,
+            ctx.fillRect(this.finalTargetPosition.x + 8,
+                         this.finalTargetPosition.y + 8,
                          16, 16);
             ctx.fillStyle = "#ffffff";
-            ctx.fillRect(end.x + 12,
-                         end.y + 12,
+            ctx.fillRect(this.finalTargetPosition.x + 12,
+                         this.finalTargetPosition.y + 12,
                          8, 8)
         }
         ctx.fillStyle = "#333333"
