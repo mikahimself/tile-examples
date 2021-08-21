@@ -8,39 +8,36 @@ export default class MapGrid {
         this.tileSizeHalf = this.tileSize.divideBy(2);
     }
 
-    isCellVacant(pos, direction) {
-        // console.log(pos);
+    isCellVacant(pos, direction, child) {
         let gridX;
         let gridY;
-        // let gridX = Math.floor((pos.x + (direction.x * 16 + 2)) / this.tileSize.x);
+
         if (direction.x > 0) {
-            gridX = Math.floor((pos.x + direction.x + 24 + 3) / this.tileSize.x);
+            gridX = Math.floor((pos.x + direction.x + child.dimensions.x + child.offset) / this.tileSize.x);
         } else {
-            gridX = Math.floor((pos.x + direction.x - 4) / this.tileSize.x);
+            gridX = Math.floor((pos.x + direction.x - child.offset) / this.tileSize.x);
         }
         if (direction.y > 0) {
-            gridY = Math.floor((pos.y + (direction.y + 24 + 3)) / this.tileSize.y);    
+            gridY = Math.floor((pos.y + (direction.y + child.dimensions.y + child.offset)) / this.tileSize.y);    
         } else {
-            gridY = Math.floor((pos.y + (direction.y - 4)) / this.tileSize.y);
+            gridY = Math.floor((pos.y + (direction.y - child.offset)) / this.tileSize.y);
         }
 
-
-        // console.log(`Target located at ${gridX}, ${gridY}`)
-        let mapPos = gridX + (gridY * this.mapSize.x);
-        let mapItem = this.mapData[mapPos];
+        let arrayPos = gridX + (gridY * this.mapSize.x);
+        let mapItem = this.mapData[arrayPos];
         return mapItem == 0 ? true : false;
-        
-
     }
 
-    getGridPosition
-
     updateChildPosition(child) {
-        var gridPos = new Vector2D(Math.floor(child.position.x / this.tileSize.x), Math.floor(child.position.y / this.tileSize.y))
-        // console.log("Grid position: ", gridPos, " direction ", child.direction)
+        var gridPos = this.worldToMap(child.position);
         var newPos = gridPos.add(child.direction)
-        // console.log("new grid pos", newPos)
-        child.placeAt(newPos.x, newPos.y)
+        var newPosWorld = new Vector2D((newPos.x * this.tileSize.x) + child.offset, (newPos.y * this.tileSize.y) + child.offset);
+
+        return newPosWorld;
+    }
+
+    worldToMap(position) {
+        return new Vector2D(Math.floor(position.x / this.tileSize.x), Math.floor(position.y / this.tileSize.y));
     }
 
     draw(ctx) {

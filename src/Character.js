@@ -1,20 +1,18 @@
 import Vector2D from './Vector2D';
 
 class Character {
-    constructor(map) {
+    constructor(map, size, speed, startPos) {
         this.map = map
-        this.offset = 4;
-        this.direction = new Vector2D(0, 0);
+        this.direction = new Vector2D();
         this.previousDirection = new Vector2D(0, 0);
-        this.velocity = new Vector2D(0, 0);
-        this.speed = 3;
-        this.position = new Vector2D(0, 0);
-        this.tileFrom = [1, 1];
-        this.tileTo = [1, 1];
-        this.timeMoved = 0;
-        this.dimensions = new Vector2D(24, 24);
-        this.dimensionsHalf = new Vector2D()
-        this.delayMove = 700;
+        this.velocity = new Vector2D();
+        this.speed = speed;
+        this.position = new Vector2D();
+        this.targetDirection = new Vector2D();
+        this.targetPosition = new Vector2D();
+        this.dimensions = new Vector2D(size, size);
+        this.offset = (map.tileSize.x - this.dimensions.x) / 2
+        this.isMoving = false;
         this.keys = {
             37: false,
             38: false,
@@ -23,13 +21,12 @@ class Character {
         };
         document.addEventListener("keydown", this.keyPressed.bind(this));
         document.addEventListener("keyup", this.keyReleased.bind(this));
-        this.placeAt(1, 1);
+        this.placeAt(startPos);
     }
 
-    placeAt(x, y) {
-        this.position.x = x * this.map.tileSize.x + this.offset// + this.map.tileSizeHalf.x;
-        this.position.y = y * this.map.tileSize.y + this.offset// + this.map.tileSizeHalf.x;
-        // console.log("place to pos: ", this.position)
+    placeAt(newPosition) {
+        this.position.x = newPosition.x * this.map.tileSize.x + this.offset;
+        this.position.y = newPosition.y * this.map.tileSize.y + this.offset;
     };
 
     processMovement(t) {
@@ -39,35 +36,41 @@ class Character {
         if (this.keys[37]) {
             this.direction.x += -1;
         }
-        if (this.keys[39]) {
+        else if (this.keys[39]) {
             this.direction.x += 1;
         }
-        if (this.keys[38]) {
+        else if (this.keys[38]) {
             this.direction.y += -1;
         }
-        if (this.keys[40]) {
+        else if (this.keys[40]) {
             this.direction.y += 1;
         }
-        // this.previousDirection = this.direction;
 
-        this.normalizeDirection();
-        
-        this.velocity = this.direction.multiplyBy(this.speed);
-        if (this.velocity.x != 0 || this.velocity.y != 0) {
-            if (this.map.isCellVacant(this.position, this.direction)) {
-                //this.position.add(this.velocity);
-                this.map.updateChildPosition(this);
+        if (!this.isMoving && !this.direction.equals(new Vector2D)) {
+            this.targetDirection = this.direction;
+            if (this.map.isCellVacant(this.position, this.targetDirection, this)) {
+                this.targetPosition = this.map.updateChildPosition(this);
+                this.isMoving = true;
             }
+        } else if (this.isMoving) {
+            this.velocity = this.targetDirection.multiplyBy(this.speed);
+            var distanceToTarget = new Vector2D(
+                                    Math.abs(this.targetPosition.x - this.position.x),
+                                    Math.abs(this.targetPosition.y - this.position.y));
+            if (Math.abs(this.velocity.x) > distanceToTarget.x) {
+                this.velocity.x = distanceToTarget.x * this.targetDirection.x;
+                this.isMoving = false;
+            }
+            if (Math.abs(this.velocity.y) > distanceToTarget.y) {
+                this.velocity.y = distanceToTarget.y * this.targetDirection.y;
+                this.isMoving = false;
+            }
+            this.move(this.velocity);
         }
     }
 
-    normalizeDirection() {
-        var magnitude = Math.sqrt((Math.abs(this.direction.x) + Math.abs(this.direction.y)));
-
-        if (this.direction.x != 0 && this.direction.y != 0) {
-            this.direction.x = this.direction.x / magnitude;
-            this.direction.y = this.direction.y / magnitude;
-        }
+    move(velocity) {
+        this.position = this.position.add(velocity);
     }
 
     keyPressed(event) {
@@ -80,8 +83,8 @@ class Character {
 
     draw(ctx) {
         ctx.fillStyle = "#333333"
-        ctx.fillRect(this.position.x, // - this.map.tileSizeHalf.x + this.offset, 
-                     this.position.y, // - this.map.tileSizeHalf.y + this.offset,
+        ctx.fillRect(this.position.x, 
+                     this.position.y,
                      this.dimensions.x,
                      this.dimensions.y);
     }

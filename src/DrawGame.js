@@ -1,5 +1,3 @@
-import Vector2D from './Vector2D';
-
 class DrawGame {
     constructor(ctx) {
         this.ctx = ctx
