@@ -12,15 +12,13 @@ var frameCount = 0;
 var mapSize = new Vector2D(15, 15);
 var tileSize = new Vector2D(32, 32)
 
-var lastFrameTime = 0;
-
 var player;
 var map;
 
 window.onload = function() {
     ctx = document.getElementById('gameCanvas').getContext('2d');
     map = new MapGrid(MapData, mapSize, tileSize)
-    player = new Character(map, 16, 2, new Vector2D(1, 2));
+    player = new Character(map, 20, 2, new Vector2D(1, 2));
     requestAnimationFrame(loop);
     drawGame = new DrawGame(ctx, mapSize, tileSize, MapData);
     ctx.font = 'bold 12pt sans-serif'
