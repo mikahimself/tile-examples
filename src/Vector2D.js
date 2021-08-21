@@ -12,6 +12,10 @@ export default class Vector2D {
         return new this.constructor(this.x + vector.x, this.y + vector.y);
     }
 
+    subtract(vector) {
+        return new this.constructor(this.x - vector.x, this.y - vector.y);
+    }
+
     multiplyBy(multiplier) {
         return new this.constructor(this.x * multiplier, this.y * multiplier);
     }

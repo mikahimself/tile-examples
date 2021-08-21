@@ -1,4 +1,6 @@
 import Vector2D from './Vector2D';
+import AStar from "./AStar";
+import Cell from './Cell';
 
 class Character {
     constructor(map, size, speed, startPos) {
@@ -21,7 +23,9 @@ class Character {
         };
         document.addEventListener("keydown", this.keyPressed.bind(this));
         document.addEventListener("keyup", this.keyReleased.bind(this));
+        document.addEventListener("mouseup", this.setRoute.bind(this));
         this.placeAt(startPos);
+        this.myRoute = []; // = this.map.route[0];
     }
 
     placeAt(newPosition) {
@@ -46,6 +50,16 @@ class Character {
             this.direction.y += 1;
         }
 
+        if (this.myRoute.length > 0 && !this.isMoving) {
+            let len = this.myRoute.length - 1;
+            let target = new Vector2D(this.myRoute[len].x, this.myRoute[len].y);
+
+            this.targetPosition = new Vector2D((target.x * 32) + this.offset, (target.y * 32) + this.offset);
+            this.isMoving = true;
+            let mapPos = this.map.worldToMap(this.position);
+            this.targetDirection = target.subtract(mapPos);
+        }
+
         if (!this.isMoving && !this.direction.equals(new Vector2D)) {
             this.targetDirection = this.direction;
             if (this.map.isCellVacant(this.position, this.targetDirection, this)) {
@@ -60,12 +74,39 @@ class Character {
             if (Math.abs(this.velocity.x) > distanceToTarget.x) {
                 this.velocity.x = distanceToTarget.x * this.targetDirection.x;
                 this.isMoving = false;
+                if (this.myRoute.length > 0) {
+                    this.myRoute.pop();
+                }
             }
             if (Math.abs(this.velocity.y) > distanceToTarget.y) {
                 this.velocity.y = distanceToTarget.y * this.targetDirection.y;
                 this.isMoving = false;
+                if (this.myRoute.length > 0) {
+                    this.myRoute.pop();
+                }
             }
             this.move(this.velocity);
+        }
+    }
+
+    setRoute(event) {
+        let target = this.map.worldToMap(new Vector2D(event.clientX - this.offset, event.clientY - this.offset))
+        let arrayTarget = this.map.mapToArray(target);
+        if (this.map.isCellBlocked(arrayTarget)) {
+            return;
+        }
+        let current = this.map.worldToMap(this.position);
+        let arrayCurrent = this.map.mapToArray(current);
+
+        let route = this.map.findRoute(arrayCurrent, arrayTarget);
+
+        if (route) {
+            this.myRoute = route;
+
+            let lastVec = new Vector2D(this.myRoute[this.myRoute.length - 1].x, this.myRoute[this.myRoute.length - 1].y);
+            if (lastVec.equals(current)) {
+                this.myRoute.pop();
+            }
         }
     }
 
@@ -82,8 +123,21 @@ class Character {
     }
 
     draw(ctx) {
+        
+
+        if (this.myRoute.length > 0) {
+            ctx.fillStyle = "#222222"
+            let end = this.map.mapToWorld(new Vector2D(this.myRoute[0].x, this.myRoute[0].y))
+            ctx.fillRect(end.x + 8,
+                         end.y + 8,
+                         16, 16);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(end.x + 12,
+                         end.y + 12,
+                         8, 8)
+        }
         ctx.fillStyle = "#333333"
-        ctx.fillRect(this.position.x, 
+        ctx.fillRect(this.position.x,
                      this.position.y,
                      this.dimensions.x,
                      this.dimensions.y);
